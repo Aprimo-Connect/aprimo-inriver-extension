@@ -35,7 +35,7 @@
       <HintPath>..\packages\Antlr.3.5.0.2\lib\Antlr3.Runtime.dll</HintPath>
     </Reference>
     <Reference Include="inRiver.Remoting, Version=7.3.0.0, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\packages\inRiver.Remoting.iPMC.7.3.19119.1\lib\net461\inRiver.Remoting.dll</HintPath>
+      <HintPath>..\packages\inRiver.Remoting.iPMC.7.3.19241.1\lib\net461\inRiver.Remoting.dll</HintPath>
     </Reference>
     <Reference Include="Newtonsoft.Json, Version=11.0.0.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed, processorArchitecture=MSIL">
       <HintPath>..\packages\Newtonsoft.Json.11.0.2\lib\net45\Newtonsoft.Json.dll</HintPath>
