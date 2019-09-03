@@ -127,7 +127,7 @@ namespace Aprimo.InRiver.OutboundExtension
                     catch (Exception e)
                     {
                         // Add request to scheduler to try again later
-                        // For the starter kit leave it at this. If a customer wants to implement this further, they can.
+                        // For the Aprimo extension leave it at this. If a customer wants to implement this further, they can.
                         Console.WriteLine(e.Message);
                         ConnectorStateHelper.Instance.Save(connectorStateIdSettingKey, (HttpRequestMessage)e.Data["Request"], Context);
                         Context.Log(inRiver.Remoting.Log.LogLevel.Debug, "Created Connector State");
