@@ -89,26 +89,33 @@ However, if you choose to allow an asset to be associated to multiple entities, 
 **Reacting to additional events in Aprimo**
 The connector will only allow a user to set the inRiver entity and unique Id once. Consider implementing the following actions for the following triggers:
 -	Updated Asset Case
-  -	Trigger: A user logs into the DAM and changes the inRiver entity type or inRiver unique Id of on the asset record, attempting to point the asset to different entity in inRiver. 
-  -	Action: Change the link in the PIM to point to the new item.
-  -	Technical Design: Create a DAM rule to listen for the trigger changes, which invokes a custom InboundDataExtension, passing along the DAM record Id. Call back into the DAM via the REST API and adjust the link in inRiver to point to the newly specified entity.
+     - Trigger: A user logs into the DAM and changes the inRiver entity type or inRiver unique Id of on the asset record, attempting to point the asset to different entity in inRiver.
+     - Action: Change the link in the PIM to point to the new item.
+     - Technical Design: Create a DAM rule to listen for the trigger changes, which invokes a custom InboundDataExtension, passing along the DAM record Id. Call back into the DAM via the REST API and adjust the link in inRiver to point to the newly specified entity.
 -	New Asset Version Case
-  -	Trigger: A user logs into the DAM and adds a new file version to the master file on a record which is synched with inRiver.
-  -	Action: Update the resource in inRiver with the latest file version.
-  -	Technical Design: Create a DAM rule to listen for the trigger changes, which invokes a custom InboundDataExtension, passing along the DAM record Id. Call back into the DAM via the REST API to get an updated preview and update the resource in inRiver.
+     -	Trigger: A user logs into the DAM and adds a new file version to the master file on a record which is synched with inRiver.
+     -	Action: Update the resource in inRiver with the latest file version.
+     -	Technical Design: Create a DAM rule to listen for the trigger changes, which invokes a custom InboundDataExtension, passing along the DAM record Id. Call back into the DAM via the REST API to get an updated preview and update the resource in inRiver.
 -	Deleted/Expired Asset Case
-  -	Trigger: A user deletes or expires an asset When an asset is deleted or expired
-  -	Action: Soft delete the resource record in PIM via an active/inactive flag.
-  -	Technical Design: Create a DAM rule to listen for the trigger changes, which invokes a custom InboundDataExtension, passing along the DAM record Id. Update the resource in InRiver to be inactive or remove it.
+     -	Trigger: A user deletes or expires an asset When an asset is deleted or expired
+     -	Action: Soft delete the resource record in PIM via an active/inactive flag.
+     -	Technical Design: Create a DAM rule to listen for the trigger changes, which invokes a custom InboundDataExtension, passing along the DAM record Id. Update the resource in InRiver to be inactive or remove it.
 Note that the DAM only sends POST requests, so the value that is passed to the InboundDataExtension must also contain an identifier for the desired action.
 
 **Beware the Infinite Loop**
+
 Be careful to avoid an infinite loop – Asset updates in Aprimo may trigger callouts to inRiver, and entity updates in inRiver may update assets in Aprimo. Ensure your rule conditions and listener extension code does not cause an infinite loop of updates. 
+
 **Leverage Connector State for Robustness**
+
 Leverage the inRiver [connector state](https://servicecenter.inriver.com/hc/en-us/articles/360012553853-Connector-State) to retry any requests to Aprimo that had failed. The connector contains a ConnectorStateHelper class that acts as a wrapper around inRiver’s ConnectorState class. The ConnectorState is useful for sharing data between different extensions. The connector does not make use of this fully, but if an API request to Aprimo to edit a record fails, the connector will log the error and use ConnectorStateHelper to store the request. You can expand this functionality and implement a feature that can retry failed requests on a schedule.
+
 **Leverage Connector State for Scalability**
+
 Additionally, for implementations that may have large amount of updates, it’s recommended to change Interface B to process on a schedule instead of real time. To do this, modify the ListenerExtension to log changes to ConnectorState, and processes the changes in a ScheduledExtension instead, de-duping any ConnectorState messages pointing to the same entity.
+
 **Additional Languages**
+
 English is the only supported language for the connector. If additional language support is needed, this will have to be built in.
 
 
