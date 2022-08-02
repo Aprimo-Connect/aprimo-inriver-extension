@@ -21,6 +21,34 @@ It is assumed that the following is true for your inRiver model to be able to us
 
 ![code3](https://user-images.githubusercontent.com/51798256/181624424-1586fa2f-b896-448e-90a8-b6657a2ab399.jpg)
 
+
+## Interfaces
+
+All code is deployed in inRiver – in Aprimo, only configuration is required. The connector is broken down into 2 major parts:
+
+**Interface A**: The InboundDataExtension an HTTP endpoint which receives POST requests from the Aprimo DAM and create new resource entities in inRiver, linking them to entities chosen by the user.
+
+**Interface B**: The Listener extensions, which monitors the data inside of inRiver and will update metadata in the Aprimo DAM via the REST API if there is an edit inside of inRiver on an entity that is linked to an Aprimo resource, or when the Aprimo Resource & link are initially created.
+
+
+### Interface A
+
+**InboundDataExtension**
+
+The InboundDataExtension receives HTTP requests via DAM rules when an asset is associated with an inRiver entity. The only class, DataAPI, implements the IInboundDataExtension interface. The InboundDataExtension only implements the Add() method, which is called when a POST request is received from an Aprimo DAM Rule. All other methods were left as is.
+
+### Interface B
+
+**EntityListener**
+
+The EntityListener receives notifications from the inRiver system when changes are made to entities including updates, creation, and deletion. When an entity in inRiver is updated the EntityListener checks to see if that entity includes an Aprimo resource, and if it does it updates Aprimo metadata with new inRiver metadata. The only method implemented in the Extension is EntityUpdated(int entityId, string[] fields). 
+
+**LinkListener**
+
+The LinkListener receives notifications from the inRiver system if changes to links occur. The only implementation in the Extension is LinkCreated(int linkId, int sourceId, int targetId, string linkTypeId, int? linkEntityId) which is called when the InboundDataExtension creates a link between a resource and entity in inRiver. The LinkListener then updates the Aprimo record with any data that already exists on the inRiver entity when the link was made.
+
+EntityListener and LinkListener are included on the same class in AprimoListenerExtension.cs, but within inRiver they are considered separate extensions and will require their own extensions created in the inRiver Connect tab.
+
 ## Activation
 This section will go over the process of implementing the Aprimo inRiver Connector.
 
