@@ -89,7 +89,6 @@ namespace Aprimo.InRiver.OutboundExtension
         // If it is the integration account, ignore the update.
         public void EntityUpdated(int entityId, string[] fields)
         {
-            Console.WriteLine("Entered Entity Updated");
             initializeDictionaries();
             //string[] fields contains the field names that were updated. Does not contain their new values
             Context.Log(inRiver.Remoting.Log.LogLevel.Debug, $"Entity {entityId.ToString()} updated with fields {fields}");
@@ -254,7 +253,6 @@ namespace Aprimo.InRiver.OutboundExtension
 
             string fieldsToUpdate = "";
            
-            // metadataMappings could be null here. However, that should never occur if everything is configured correctly. 
             for(int i = 0; i < fields.Length; i++)
             {
                 // Ensure the mapping exists, the field exists on the entity, and the data is not null
@@ -299,31 +297,30 @@ namespace Aprimo.InRiver.OutboundExtension
             var retVal = "";
 
             // Form endpoint
-            string accessTokenURL = String.Concat("https://" + $"{DefaultSettings["aprimoTenant"]}" + ".aprimo.com/api/oauth/create-native-token");
+            string accessTokenURL = String.Concat("https://" + $"{Context.Settings["aprimoTenant"]}" + ".aprimo.com/login/connect/token");
 
             using (HttpClient httpClient = new HttpClient())
             {
-                string plaintextAuth = $"{DefaultSettings["integrationUsername"]}:{DefaultSettings["userToken"]}";
-
                 // Set the URL and Headers
                 httpClient.BaseAddress = new Uri(accessTokenURL);
-
-                byte[] byteString = Encoding.ASCII.GetBytes(plaintextAuth);
-                httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Basic", Convert.ToBase64String(byteString));
-
-                httpClient.DefaultRequestHeaders.Add("client-id", DefaultSettings["clientID"]);
+                Dictionary<string, string> bodyParams = new Dictionary<string, string>()
+                {
+                    {"grant_type", "client_credentials" },
+                    {"scope", "api" },
+                    {"client_id", Context.Settings["clientID"] },
+                    {"client_secret", Context.Settings["clientSecret"] }
+                };
 
                 // Make the call to get the access token
                 HttpResponseMessage response = null;
                 try
                 {
-                    response = httpClient.PostAsync(accessTokenURL, null).Result;
-
+                    response = httpClient.PostAsync(accessTokenURL, new FormUrlEncodedContent(bodyParams)).Result;
                     if (response.Content != null)
                     {
                         var responseContent = response.Content.ReadAsStringAsync().Result;
                         dynamic jsonObj = JsonConvert.DeserializeObject(responseContent);
-                        retVal = jsonObj["accessToken"];
+                        retVal = jsonObj["access_token"];
                     }
                     else
                     {

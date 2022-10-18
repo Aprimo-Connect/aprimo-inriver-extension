@@ -32,6 +32,7 @@ namespace Aprimo.InRiver.InboundExtension
         public Dictionary<string, string> DefaultSettings => new Dictionary<string, string>
         {
              { "clientID", "[ClientID]" },
+            { "clientSecret", "[ClientSecret]" },
                 { "integrationUsername", "[IntegrationUsername]" },
                 { "userToken", "[IntegrationUserToken]" },
                 { "aprimoTenant", "[AprimoTenantName]" },
@@ -170,7 +171,6 @@ namespace Aprimo.InRiver.InboundExtension
             #region 2. Validate
 
             // Check if resource already exists
-
             Entity resource = Context.ExtensionManager.DataService.GetEntityByUniqueValue(Context.Settings["aprimoRecordIdFieldTypeID"], recordID, LoadLevel.DataAndLinks);
             if (resource != null)
             {
@@ -212,7 +212,6 @@ namespace Aprimo.InRiver.InboundExtension
             
 
             // Get record's metadata, masterfilelatestversion, and the preview of the masterfile
-            
             recordBody = GetRecord(recordID);
             masterFileName = recordBody["masterFileLatestVersion"]["fileName"];
             previewURI = recordBody["preview"]["uri"];
@@ -290,31 +289,33 @@ namespace Aprimo.InRiver.InboundExtension
             var retVal = "";
 
             // Form endpoint
-            string accessTokenURL = String.Concat("https://" + $"{Context.Settings["aprimoTenant"]}" + ".aprimo.com/api/oauth/create-native-token");
+            string accessTokenURL = String.Concat("https://" + $"{Context.Settings["aprimoTenant"]}" + ".aprimo.com/login/connect/token");
 
             using (HttpClient httpClient = new HttpClient())
             {
-                string plaintextAuth = $"{Context.Settings["integrationUsername"]}:{Context.Settings["userToken"]}";
 
                 // Set the URL and Headers
                 httpClient.BaseAddress = new Uri(accessTokenURL);
+                Dictionary<string, string> bodyParams = new Dictionary<string, string>()
+                {
+                    {"grant_type", "client_credentials" },
+                    {"scope", "api" },
+                    {"client_id", Context.Settings["clientID"] },
+                    {"client_secret", Context.Settings["clientSecret"] }
+                };
 
-                byte[] byteString = Encoding.ASCII.GetBytes(plaintextAuth);
-                httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Basic", Convert.ToBase64String(byteString));
-
-                httpClient.DefaultRequestHeaders.Add("client-id", Context.Settings["clientID"]);
 
                 // Make the call to get the access token
                 HttpResponseMessage response = null;
                 try
                 {
-                    response = httpClient.PostAsync(accessTokenURL, null).Result;
+                    response = httpClient.PostAsync(accessTokenURL, new FormUrlEncodedContent(bodyParams)).Result;
 
                     if (response.Content != null)
                     {
                         var responseContent = response.Content.ReadAsStringAsync().Result;
                         dynamic jsonObj = JsonConvert.DeserializeObject(responseContent);
-                        retVal = jsonObj["accessToken"];
+                        retVal = jsonObj["access_token"];
 
                         if(accessToken == null)
                         {
