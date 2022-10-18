@@ -28,20 +28,21 @@ namespace Aprimo.InRiver.InboundExtension
         // Aprimo access tokens last 10 minutes
         private Stopwatch stopWatch = new Stopwatch();
         private string accessToken = null;
+        // DefaultSettings is automatically detected by the inRiver client when the connector is uploaded
         public Dictionary<string, string> DefaultSettings => new Dictionary<string, string>
         {
-            { "clientID", "RY3WL3AR-RY3W" },
-            { "integrationUsername", "jratiniIntegration" },
-            { "userToken", "270bd80a61274300bd5f0ed19d2d5f69" },
-            { "aprimoTenant", "productstrategy1" },
-            { "entityTypeDAMFieldID", "e101ff8be98d404ca43daa3f01538c97" }, //inRiverEntityType
-            { "entityIDDAMFieldID", "7ac090e504944877ab4faa3f0153d467" }, // inRiverEntityID
-            { "resourceIDDAMFieldID", "c871793508d34d1a97b9aa86010ca90a" },
-            { "statusDAMFieldID",  "6e6ff917-37ef-42d7-949e-aa8c013cb2fe"},
-            { "ResourceTitle", "Record Title" },
-            { "aprimoRecordIdFieldTypeID", "AprimoRecordId" },
-            { "aprimoResourceFromAprimoFieldTypeID", "ResourceFromAprimo" },
-            { "entityUniqueFieldsForIdentifying", "Product:ProductId;Item:ItemNumber;Channel:ChannelName" }
+             { "clientID", "[ClientID]" },
+                { "integrationUsername", "[IntegrationUsername]" },
+                { "userToken", "[IntegrationUserToken]" },
+                { "aprimoTenant", "[AprimoTenantName]" },
+                { "entityTypeDAMFieldID", "[AprimoFieldIDForEntityType]" }, //inRiverEntityType
+                { "entityIDDAMFieldID", "[AprimoFieldIDForEntityID]" }, // inRiverEntityID
+                { "resourceIDDAMFieldID", "[AprimoFieldIDForResourceID]" },
+                { "statusDAMFieldID",  "[AprimoFieldIDForStatusMessages]"},
+                { "ResourceTitle", "[AprimoFieldToUseForInRiverResourceTitle]" },
+                { "aprimoRecordIdFieldTypeID", "[inRiverFieldNameToStoreAprimoRecordID]" },
+                { "aprimoResourceFromAprimoFieldTypeID", "[inRiverFieldNameForFieldToMarkAResourceFromAprimo]" },
+                { "entityUniqueFieldsForIdentifying", "[OptionsListMapping]" } //EX: Product:ProductId;Item:ItemNumber;Channel:ChannelName
         };
         // These dictionaries will be initialized after we get the Context
         private Dictionary<string, string> uniqueFieldDictionary = null;
@@ -61,7 +62,7 @@ namespace Aprimo.InRiver.InboundExtension
         #region API Calls
         public string Add(string value)
         {
-            Context.Log(inRiver.Remoting.Log.LogLevel.Debug, "Entered Add()");
+            // Called by Aprimo DAM when sending an asset to inRiver
             Context.Log(inRiver.Remoting.Log.LogLevel.Information, $"Add() passed value: {value}");
             // Check if dictionaries are initialized
             initializeDictionaries();
@@ -88,27 +89,30 @@ namespace Aprimo.InRiver.InboundExtension
             }
             catch (ArgumentException e)
             {
-                // Update Aprimo to expose the error
+                // statusMessage will be used to update Aprimo
                 statusMessage = e.Message;
-                Console.WriteLine(e.Message);
+                // Log the error in inRiver
                 Context.Log(inRiver.Remoting.Log.LogLevel.Error, $"ArgumentException: {e.Message} ");
             }
             catch (HttpRequestException e)
             {
+                // statusMessage will be used to update Aprimo
                 statusMessage = e.Message;
-                Console.WriteLine(e.Message);
+                // Log the error in inRiver
                 Context.Log(inRiver.Remoting.Log.LogLevel.Error, $"HttpRequestException: {e.Message} ");
             }
             catch (TimeoutException e)
             {
+                // statusMessage will be used to update Aprimo
                 statusMessage = e.Message;
-                Console.WriteLine(e.Message);
+                // Log the error in inRiver
                 Context.Log(inRiver.Remoting.Log.LogLevel.Error, $"TimeoutError: {e.Message} ");
             }
             catch (Exception e)
             {
+                // statusMessage will be used to update Aprimo
                 statusMessage = e.Message;
-                Console.WriteLine(e.Message);
+                // Log the error in inRiver
                 Context.Log(inRiver.Remoting.Log.LogLevel.Error, $"Base Exception: {e.Message} ");
             }
             finally
@@ -174,7 +178,7 @@ namespace Aprimo.InRiver.InboundExtension
                 
             }
 
-            // Is this even necessary? If the resource exists, we exit already
+            
             // Check if link already exists
             if(resource != null)
             {
@@ -210,7 +214,6 @@ namespace Aprimo.InRiver.InboundExtension
             // Get record's metadata, masterfilelatestversion, and the preview of the masterfile
             
             recordBody = GetRecord(recordID);
-            
             masterFileName = recordBody["masterFileLatestVersion"]["fileName"];
             previewURI = recordBody["preview"]["uri"];
             // mimeType may come out as octet-stream regularly. You may need to add a file extension to mime type mapping

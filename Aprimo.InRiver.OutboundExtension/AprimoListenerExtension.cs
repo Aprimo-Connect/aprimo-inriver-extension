@@ -21,14 +21,14 @@ namespace Aprimo.InRiver.OutboundExtension
         private string connectorStateIdSettingKey = "AprimoListenerConnectorState";
         public Dictionary<string, string> DefaultSettings => new Dictionary<string, string>()
         {
-            { "clientID", "RY3WL3AR-RY3W" },
-            { "integrationUsername", "jratiniIntegration" },
-            { "userToken", "270bd80a61274300bd5f0ed19d2d5f69" },
-            { "aprimoTenant", "productstrategy1" },
-            { "aprimoResourceFromAprimoFieldTypeID", "ResourceFromAprimo" },
-            { "aprimoRecordIdFieldTypeID", "AprimoRecordId" },
-            { "inRiverProductMetadataMapping", "SKU:4661dee1-b4c8-4575-afbf-aa8c00edcd84;Materials:ce349f4e-0995-46dd-8934-aa880121abd9;Price:b47a5ce7-a364-4b6f-9eb5-aa8c00ee3fe8" },
-            { "inRiverItemMetadataMapping", "inRiverField1:aprimoField1" }
+            { "clientID", "[ClientID]" },
+            { "integrationUsername", "[IntegrationUsername]" },
+            { "userToken", "[IntegrationUserToken]" },
+            { "aprimoTenant", "[AprimoTenantName]" },
+            { "aprimoResourceFromAprimoFieldTypeID", "[inRiverFieldNameForResourceFromAprimo]" },
+            { "aprimoRecordIdFieldTypeID", "[inRiverFieldNameForRecordID]" },
+            { "inRiverProductMetadataMapping", "[ProductMetadataMapping]" }, // Ex. SKU:[aprimofieldid];Materials:[aprimofieldid];Price:[aprimofieldid]
+            { "inRiverItemMetadataMapping", "[ItemMetadataMapping]" }
            
         };
 
