@@ -64,7 +64,7 @@ namespace Aprimo.InRiver.InboundExtension
         public string Add(string value)
         {
             // Called by Aprimo DAM when sending an asset to inRiver
-            Context.Log(inRiver.Remoting.Log.LogLevel.Information, $"Add() passed value: {value}");
+            Context.Log(inRiver.Remoting.Log.LogLevel.Information, $"ProductStrategy1 - Add() passed value: {value}");
             // Check if dictionaries are initialized
             initializeDictionaries();
             
@@ -93,28 +93,28 @@ namespace Aprimo.InRiver.InboundExtension
                 // statusMessage will be used to update Aprimo
                 statusMessage = e.Message;
                 // Log the error in inRiver
-                Context.Log(inRiver.Remoting.Log.LogLevel.Error, $"ArgumentException: {e.Message} ");
+                Context.Log(inRiver.Remoting.Log.LogLevel.Error, $"ProductStrategy1- ArgumentException: {e.Message} ");
             }
             catch (HttpRequestException e)
             {
                 // statusMessage will be used to update Aprimo
                 statusMessage = e.Message;
                 // Log the error in inRiver
-                Context.Log(inRiver.Remoting.Log.LogLevel.Error, $"HttpRequestException: {e.Message} ");
+                Context.Log(inRiver.Remoting.Log.LogLevel.Error, $"ProductStrategy1- HttpRequestException: {e.Message} ");
             }
             catch (TimeoutException e)
             {
                 // statusMessage will be used to update Aprimo
                 statusMessage = e.Message;
                 // Log the error in inRiver
-                Context.Log(inRiver.Remoting.Log.LogLevel.Error, $"TimeoutError: {e.Message} ");
+                Context.Log(inRiver.Remoting.Log.LogLevel.Error, $"ProductStrategy1- TimeoutError: {e.Message} ");
             }
             catch (Exception e)
             {
                 // statusMessage will be used to update Aprimo
                 statusMessage = e.Message;
                 // Log the error in inRiver
-                Context.Log(inRiver.Remoting.Log.LogLevel.Error, $"Base Exception: {e.Message} ");
+                Context.Log(inRiver.Remoting.Log.LogLevel.Error, $"ProductStrategy1- Base Exception: {e.Message} ");
             }
             finally
             {
@@ -140,7 +140,7 @@ namespace Aprimo.InRiver.InboundExtension
             }
             
 
-            return $"Message from Add()";
+            return $"ProductStrategy1- Message from Add()";
         }
 
         public string Delete(string value)
@@ -151,7 +151,7 @@ namespace Aprimo.InRiver.InboundExtension
         public string Test()
         {
             Context.Log(inRiver.Remoting.Log.LogLevel.Debug, Context.Username);
-            return "Testing Data Extension";
+            return "ProductStrategy1- Testing Data Extension";
         }
 
         public string Update(string value)
@@ -174,7 +174,7 @@ namespace Aprimo.InRiver.InboundExtension
             Entity resource = Context.ExtensionManager.DataService.GetEntityByUniqueValue(Context.Settings["aprimoRecordIdFieldTypeID"], recordID, LoadLevel.DataAndLinks);
             if (resource != null)
             {
-                throw new ArgumentException($"Aprimo record {recordID} already exists as a resource in inRiver"); // Caught in Add()
+                throw new ArgumentException($"ProductStrategy1- Aprimo record {recordID} already exists as a resource in inRiver"); // Caught in Add()
                 
             }
 
@@ -190,7 +190,7 @@ namespace Aprimo.InRiver.InboundExtension
                     if (sourceEntity.EntityType.ToString() == entityType && (string)sourceEntity.GetField(uniqueFieldDictionary[sourceEntity.EntityType.ToString()]).Data == entityID)
                     {
                         // Trying to link to an entity the resource is already linked to
-                        throw new ArgumentException($"Resource with Aprimo record id {recordID} is already linked to a(n) {entityType} with id {entityID}"); // Caught in Add()
+                        throw new ArgumentException($"ProductStrategy1- Resource with Aprimo record id {recordID} is already linked to a(n) {entityType} with id {entityID}"); // Caught in Add()
                     }
                 });
             }
@@ -337,8 +337,8 @@ namespace Aprimo.InRiver.InboundExtension
 
                     // Error layer of inRiver logging will contain Status Codes and generic reasons from the server. 
                     // Debug layer will contain the request message or the stack trace
-                    Context.Log(inRiver.Remoting.Log.LogLevel.Error, $"Code {response.StatusCode}: {response.ReasonPhrase}");
-                    Context.Log(inRiver.Remoting.Log.LogLevel.Debug, $"Code {response.StatusCode}. \n Request: {response.RequestMessage}");
+                    Context.Log(inRiver.Remoting.Log.LogLevel.Error, $"ProductStrategy1- Code {response.StatusCode}: {response.ReasonPhrase}");
+                    Context.Log(inRiver.Remoting.Log.LogLevel.Debug, $"ProductStrategy1- Code {response.StatusCode}. \n Request: {response.RequestMessage}");
                 }
                 
 
@@ -403,8 +403,8 @@ namespace Aprimo.InRiver.InboundExtension
                 }
                 else
                 {
-                    Context.Log(inRiver.Remoting.Log.LogLevel.Error, $"{response.StatusCode}: {response.ReasonPhrase}");
-                    Context.Log(inRiver.Remoting.Log.LogLevel.Debug, $"{response.RequestMessage}");
+                    Context.Log(inRiver.Remoting.Log.LogLevel.Error, $"ProductStrategy1- {response.StatusCode}: {response.ReasonPhrase}");
+                    Context.Log(inRiver.Remoting.Log.LogLevel.Debug, $"ProductStrategy1- {response.RequestMessage}");
                 }
             }
                         
@@ -499,7 +499,7 @@ namespace Aprimo.InRiver.InboundExtension
             }
             else
             {
-                throw new ArgumentException($"Resource for {recordId} already exists"); // Caught in Add()
+                throw new ArgumentException($"ProductStrategy1- Resource for {recordId} already exists"); // Caught in Add()
             }
             return retVal;
         }

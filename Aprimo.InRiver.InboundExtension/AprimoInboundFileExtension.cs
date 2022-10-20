@@ -34,7 +34,7 @@ namespace Aprimo.InRiver.InboundExtension
         //DELETE
         public string Delete(string filename)
         {
-            return $"echo {filename}";
+            return $"ProductStrategy1- echo {filename}";
         }
 
         //GET
