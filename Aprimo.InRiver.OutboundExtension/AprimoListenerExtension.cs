@@ -23,7 +23,6 @@ namespace Aprimo.InRiver.OutboundExtension
         {
             { "clientID", "[ClientID]" },
             { "integrationUsername", "[IntegrationUsername]" },
-            { "userToken", "[IntegrationUserToken]" },
             { "aprimoTenant", "[AprimoTenantName]" },
             { "aprimoResourceFromAprimoFieldTypeID", "[inRiverFieldNameForResourceFromAprimo]" },
             { "aprimoRecordIdFieldTypeID", "[inRiverFieldNameForRecordID]" },
