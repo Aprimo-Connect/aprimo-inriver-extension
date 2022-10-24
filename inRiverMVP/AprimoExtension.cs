@@ -44,7 +44,6 @@ namespace Aprimo.InRiver.InboundExtension
                 { "clientID", "[ClientID]" },
                 { "clientSecret","[ClientSecret" },
                 { "integrationUsername", "[IntegrationUsername]" },
-                { "userToken", "[IntegrationUserToken]" },
                 { "aprimoTenant", "[AprimoTenantName]" },
                 { "entityTypeDAMFieldID", "[AprimoFieldIDForEntityType]" }, //inRiverEntityType
                 { "entityIDDAMFieldID", "[AprimoFieldIDForEntityID]" }, // inRiverEntityID

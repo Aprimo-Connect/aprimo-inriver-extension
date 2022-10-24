@@ -22,6 +22,7 @@ namespace Aprimo.InRiver.OutboundExtension
         public Dictionary<string, string> DefaultSettings => new Dictionary<string, string>()
         {
             { "clientID", "[ClientID]" },
+            { "clientSecret", "[ClientSecret" },
             { "integrationUsername", "[IntegrationUsername]" },
             { "userToken", "[IntegrationUserToken]" },
             { "aprimoTenant", "[AprimoTenantName]" },
