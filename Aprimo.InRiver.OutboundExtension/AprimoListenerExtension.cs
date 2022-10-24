@@ -92,7 +92,7 @@ namespace Aprimo.InRiver.OutboundExtension
         {
             initializeDictionaries();
             //string[] fields contains the field names that were updated. Does not contain their new values
-            Context.Log(inRiver.Remoting.Log.LogLevel.Debug, $"Entity {entityId.ToString()} updated with fields {fields}");
+            Context.Log(inRiver.Remoting.Log.LogLevel.Debug, $"ProductStrategy1- Entity {entityId.ToString()} updated with fields {fields}");
 
             // Get all entity Links
             Entity updatedEntity = Context.ExtensionManager.DataService.GetEntity(entityId, LoadLevel.DataAndLinks);
@@ -130,7 +130,7 @@ namespace Aprimo.InRiver.OutboundExtension
                         // For the Aprimo extension leave it at this. If a customer wants to implement this further, they can.
                         Console.WriteLine(e.Message);
                         ConnectorStateHelper.Instance.Save(connectorStateIdSettingKey, (HttpRequestMessage)e.Data["Request"], Context);
-                        Context.Log(inRiver.Remoting.Log.LogLevel.Debug, "Created Connector State");
+                        Context.Log(inRiver.Remoting.Log.LogLevel.Debug, "ProductStrategy1- Created Connector State");
                     }
                 }
             });
@@ -144,8 +144,7 @@ namespace Aprimo.InRiver.OutboundExtension
         #region ILinkListener
         public void LinkCreated(int linkId, int sourceId, int targetId, string linkTypeId, int? linkEntityId)
         {
-            Context.Log(inRiver.Remoting.Log.LogLevel.Debug, "Link Created() Called");
-            Console.WriteLine("Entered Link Created");
+            Context.Log(inRiver.Remoting.Log.LogLevel.Debug, "ProductStrategy1- Link Created() Called");
             // The function will execute when any link is created.
             // Check the target(resource) to determine if it is an aprimo resource
             Entity targetResource = Context.ExtensionManager.DataService.GetEntity(targetId, LoadLevel.DataOnly);
@@ -333,8 +332,8 @@ namespace Aprimo.InRiver.OutboundExtension
 
                     // Error layer of inRiver logging will contain Status Codes and generic reasons from the server. 
                     // Debug layer will contain the request message or the stack trace
-                    Context.Log(inRiver.Remoting.Log.LogLevel.Error, $"Code {response.StatusCode}: {response.ReasonPhrase}");
-                    Context.Log(inRiver.Remoting.Log.LogLevel.Debug, $"Code {response.StatusCode}. \n Request: {response.RequestMessage}");
+                    Context.Log(inRiver.Remoting.Log.LogLevel.Error, $"ProductStrategy1- Code {response.StatusCode}: {response.ReasonPhrase}");
+                    Context.Log(inRiver.Remoting.Log.LogLevel.Debug, $"ProductStrategy1- Code {response.StatusCode}. \n Request: {response.RequestMessage}");
                 }
 
 
