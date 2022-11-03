@@ -31,8 +31,8 @@ namespace Aprimo.InRiver.InboundExtension
         // DefaultSettings is automatically detected by the inRiver client when the connector is uploaded
         public Dictionary<string, string> DefaultSettings => new Dictionary<string, string>
         {
-             { "clientID", "[ClientID]" },
-            { "clientSecret", "[ClientSecret]" },
+                { "clientID", "[ClientID]" },
+                { "clientSecret", "[ClientSecret]" },
                 { "integrationUsername", "[IntegrationUsername]" },
                 { "aprimoTenant", "[AprimoTenantName]" },
                 { "entityTypeDAMFieldID", "[AprimoFieldIDForEntityType]" }, //inRiverEntityType
@@ -42,10 +42,12 @@ namespace Aprimo.InRiver.InboundExtension
                 { "ResourceTitle", "[AprimoFieldToUseForInRiverResourceTitle]" },
                 { "aprimoRecordIdFieldTypeID", "[inRiverFieldNameToStoreAprimoRecordID]" },
                 { "aprimoResourceFromAprimoFieldTypeID", "[inRiverFieldNameForFieldToMarkAResourceFromAprimo]" },
-                { "entityUniqueFieldsForIdentifying", "[OptionsListMapping]" } //EX: Product:ProductId;Item:ItemNumber;Channel:ChannelName
+                { "aprimoMetadataForResourceMapping", "AprimoFieldName:InRiverFieldName" },
+                { "inRiverEntityUniqueFieldsForIdentifying", "[OptionsListMapping]" } //EX: Product:ProductId;Item:ItemNumber;Channel:ChannelName
         };
         // These dictionaries will be initialized after we get the Context
         private Dictionary<string, string> uniqueFieldDictionary = null;
+        private Dictionary<string, string> aprimoMetadataFieldsToMapToInRiverResource = null;
         public DataAPI()
         {
         }
@@ -63,7 +65,7 @@ namespace Aprimo.InRiver.InboundExtension
         public string Add(string value)
         {
             // Called by Aprimo DAM when sending an asset to inRiver
-            Context.Log(inRiver.Remoting.Log.LogLevel.Information, $"ProductStrategy1 - Add() passed value: {value}");
+            Context.Log(inRiver.Remoting.Log.LogLevel.Information, $"[AprimoTenant] - Add() passed value: {value}");
             // Check if dictionaries are initialized
             initializeDictionaries();
             
@@ -86,34 +88,38 @@ namespace Aprimo.InRiver.InboundExtension
                     createOperation(recordID, entityType, entityID);
                     
                 }
+                else if (operationType == "UPDATE")
+                {
+                    updateOperation(recordID, entityType, entityID);
+                }
             }
             catch (ArgumentException e)
             {
                 // statusMessage will be used to update Aprimo
                 statusMessage = e.Message;
                 // Log the error in inRiver
-                Context.Log(inRiver.Remoting.Log.LogLevel.Error, $"ProductStrategy1- ArgumentException: {e.Message} ");
+                Context.Log(inRiver.Remoting.Log.LogLevel.Error, $"Aprimo Environment- ArgumentException: {e.Message} ");
             }
             catch (HttpRequestException e)
             {
                 // statusMessage will be used to update Aprimo
                 statusMessage = e.Message;
                 // Log the error in inRiver
-                Context.Log(inRiver.Remoting.Log.LogLevel.Error, $"ProductStrategy1- HttpRequestException: {e.Message} ");
+                Context.Log(inRiver.Remoting.Log.LogLevel.Error, $"Aprimo Environment- HttpRequestException: {e.Message} ");
             }
             catch (TimeoutException e)
             {
                 // statusMessage will be used to update Aprimo
                 statusMessage = e.Message;
                 // Log the error in inRiver
-                Context.Log(inRiver.Remoting.Log.LogLevel.Error, $"ProductStrategy1- TimeoutError: {e.Message} ");
+                Context.Log(inRiver.Remoting.Log.LogLevel.Error, $"Aprimo Environment- TimeoutError: {e.Message} ");
             }
             catch (Exception e)
             {
                 // statusMessage will be used to update Aprimo
                 statusMessage = e.Message;
                 // Log the error in inRiver
-                Context.Log(inRiver.Remoting.Log.LogLevel.Error, $"ProductStrategy1- Base Exception: {e.Message} ");
+                Context.Log(inRiver.Remoting.Log.LogLevel.Error, $"Aprimo Environment- Base Exception: {e.Message} ");
             }
             finally
             {
@@ -139,7 +145,7 @@ namespace Aprimo.InRiver.InboundExtension
             }
             
 
-            return $"ProductStrategy1- Message from Add()";
+            return $"Aprimo Environment- Message from Add()";
         }
 
         public string Delete(string value)
@@ -150,7 +156,7 @@ namespace Aprimo.InRiver.InboundExtension
         public string Test()
         {
             Context.Log(inRiver.Remoting.Log.LogLevel.Debug, Context.Username);
-            return "ProductStrategy1- Testing Data Extension";
+            return "Aprimo Environment- Testing Data Extension";
         }
 
         public string Update(string value)
@@ -173,7 +179,7 @@ namespace Aprimo.InRiver.InboundExtension
             Entity resource = Context.ExtensionManager.DataService.GetEntityByUniqueValue(Context.Settings["aprimoRecordIdFieldTypeID"], recordID, LoadLevel.DataAndLinks);
             if (resource != null)
             {
-                throw new ArgumentException($"ProductStrategy1- Aprimo record {recordID} already exists as a resource in inRiver"); // Caught in Add()
+                throw new ArgumentException($"Aprimo Environment- Aprimo record {recordID} already exists as a resource in inRiver"); // Caught in Add()
                 
             }
 
@@ -189,7 +195,7 @@ namespace Aprimo.InRiver.InboundExtension
                     if (sourceEntity.EntityType.ToString() == entityType && (string)sourceEntity.GetField(uniqueFieldDictionary[sourceEntity.EntityType.ToString()]).Data == entityID)
                     {
                         // Trying to link to an entity the resource is already linked to
-                        throw new ArgumentException($"ProductStrategy1- Resource with Aprimo record id {recordID} is already linked to a(n) {entityType} with id {entityID}"); // Caught in Add()
+                        throw new ArgumentException($"Aprimo Environment- Resource with Aprimo record id {recordID} is already linked to a(n) {entityType} with id {entityID}"); // Caught in Add()
                     }
                 });
             }
@@ -269,14 +275,94 @@ namespace Aprimo.InRiver.InboundExtension
 
             #endregion
         }
-        
+
+        // Find resource associated to Aprimo DAM recordID
+        // Check if that resource has a file
+        // If not - add the current master file (inRiver is a final destination for assets, so once a file is there it shouldnt need to be updated)
+        // Update any metadata
+        private void updateOperation(string recordID, string entityType, string entityID)
+        {
+            Context.Log(inRiver.Remoting.Log.LogLevel.Debug, $"Aprimo Environment - Updating with recordID {recordID}");
+            // Get Access Token
+            accessToken = GetDAMAccessToken();
+
+            // Get Resource
+            string inRiverFieldTypeID = Context.Settings["aprimoRecordIdFieldTypeID"];
+            Entity inRiverResource = Context.ExtensionManager.DataService.GetEntityByUniqueValue(inRiverFieldTypeID, recordID, LoadLevel.DataOnly);
+
+            // Variables
+            dynamic recordBody = GetRecord(recordID);
+            string masterFileName;
+            string previewURI;
+            string mimeType;
+
+            // Check for file
+            if (inRiverResource.MainPictureId == null)
+            {
+
+                if (recordBody["masterFileLatestVersion"] != null)
+                {
+                    Context.Log(inRiver.Remoting.Log.LogLevel.Debug, $"Aprimo Environment - masterfile found on record {recordID}");
+
+                    masterFileName = recordBody["masterFileLatestVersion"]["fileName"];
+                    previewURI = recordBody["preview"]["uri"];
+                    // mimeType may come out as octet-stream regularly. You may need to add a file extension to mime type mapping
+                    mimeType = recordBody["masterFileLatestVersion"]["fileType"]["mimeType"];
+
+                    // Add file to inRiver Resource
+                    Field resourceFileName = inRiverResource.GetField("ResourceFilename"); // Unique
+                    Field resourceFileID = inRiverResource.GetField("ResourceFileId"); // Unique & requires a fileID obtained from creating a new ResourceFile using the UtilityService
+                    Field resourceMimeType = inRiverResource.GetField("ResourceMimeType");
+
+                    // Add file to inRiver and add metadata to Resource
+                    int resourceFileId = Context.ExtensionManager.UtilityService.AddFileFromUrl(masterFileName, previewURI);
+                    resourceFileName.Data = masterFileName;
+                    resourceFileID.Data = resourceFileId;
+                    resourceMimeType.Data = mimeType;
+
+                    Context.Log(inRiver.Remoting.Log.LogLevel.Debug, $"Aprimo Environment - added file {masterFileName} to local resource {inRiverResource.Id}");
+
+                }
+                else
+                {
+                    // recordBody["masterFileLatestVersion"] must equal null
+                    Context.Log(inRiver.Remoting.Log.LogLevel.Debug, $"Aprimo Environment - No masterfilefile on record {recordID} when trying to update resource {inRiverResource.Id}");
+
+                }
+            }
+
+
+            // Update resource metadata with new Aprimo metadata
+            foreach (dynamic obj in recordBody["fields"]["items"])
+            {
+                if (aprimoMetadataFieldsToMapToInRiverResource.ContainsKey((string)obj.fieldName))
+                {
+                    string inRiverFieldTypeId = aprimoMetadataFieldsToMapToInRiverResource[(string)obj.fieldName];
+                    Field inRiverResourceField = inRiverResource.GetField(inRiverFieldTypeId);
+                    inRiverResourceField.Data = (string)obj.localizedValues[0].value;
+                    Context.Log(inRiver.Remoting.Log.LogLevel.Debug, $"Aprimo Environment - added data to local resource {inRiverResourceField.EntityId}");
+                }
+
+            }
+
+            Context.Log(inRiver.Remoting.Log.LogLevel.Debug, $"Aprimo Environment - Updating resource {inRiverResource.Id} with Aprimo record {recordID}");
+            Context.ExtensionManager.DataService.UpdateEntity(inRiverResource);
+        }
+
         private void initializeDictionaries()
         {
             if(uniqueFieldDictionary == null)
             {
                 // Split the entityUniqueFieldsForIdentifyng setting and turn it into a Dictionary at runtime. This way we can easily retrieve items in it moving forward.
                 // This should only run once, when the connector starts
-                uniqueFieldDictionary = Context.Settings["entityUniqueFieldsForIdentifying"].Split(new[] { ';' }, StringSplitOptions.RemoveEmptyEntries)
+                uniqueFieldDictionary = Context.Settings["inRiverEntityUniqueFieldsForIdentifying"].Split(new[] { ';' }, StringSplitOptions.RemoveEmptyEntries)
+                    .Select(part => part.Split(':'))
+                    .ToDictionary(split => split[0], split => split[1]);
+            }
+
+            if (aprimoMetadataFieldsToMapToInRiverResource == null)
+            {
+                aprimoMetadataFieldsToMapToInRiverResource = Context.Settings["aprimoMetadataForResourceMapping"].Split(new[] { ';' }, StringSplitOptions.RemoveEmptyEntries)
                     .Select(part => part.Split(':'))
                     .ToDictionary(split => split[0], split => split[1]);
             }
@@ -336,8 +422,8 @@ namespace Aprimo.InRiver.InboundExtension
 
                     // Error layer of inRiver logging will contain Status Codes and generic reasons from the server. 
                     // Debug layer will contain the request message or the stack trace
-                    Context.Log(inRiver.Remoting.Log.LogLevel.Error, $"ProductStrategy1- Code {response.StatusCode}: {response.ReasonPhrase}");
-                    Context.Log(inRiver.Remoting.Log.LogLevel.Debug, $"ProductStrategy1- Code {response.StatusCode}. \n Request: {response.RequestMessage}");
+                    Context.Log(inRiver.Remoting.Log.LogLevel.Error, $"Aprimo Environment- Code {response.StatusCode}: {response.ReasonPhrase}");
+                    Context.Log(inRiver.Remoting.Log.LogLevel.Debug, $"Aprimo Environment- Code {response.StatusCode}. \n Request: {response.RequestMessage}");
                 }
                 
 
@@ -402,8 +488,8 @@ namespace Aprimo.InRiver.InboundExtension
                 }
                 else
                 {
-                    Context.Log(inRiver.Remoting.Log.LogLevel.Error, $"ProductStrategy1- {response.StatusCode}: {response.ReasonPhrase}");
-                    Context.Log(inRiver.Remoting.Log.LogLevel.Debug, $"ProductStrategy1- {response.RequestMessage}");
+                    Context.Log(inRiver.Remoting.Log.LogLevel.Error, $"Aprimo Environment- {response.StatusCode}: {response.ReasonPhrase}");
+                    Context.Log(inRiver.Remoting.Log.LogLevel.Debug, $"Aprimo Environment- {response.RequestMessage}");
                 }
             }
                         
@@ -498,7 +584,7 @@ namespace Aprimo.InRiver.InboundExtension
             }
             else
             {
-                throw new ArgumentException($"ProductStrategy1- Resource for {recordId} already exists"); // Caught in Add()
+                throw new ArgumentException($"Aprimo Environment- Resource for {recordId} already exists"); // Caught in Add()
             }
             return retVal;
         }
