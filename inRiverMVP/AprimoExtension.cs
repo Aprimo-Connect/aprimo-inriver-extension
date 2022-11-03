@@ -43,7 +43,6 @@ namespace Aprimo.InRiver.InboundExtension
             {
                 { "clientID", "[ClientID]" },
                 { "clientSecret","[ClientSecret" },
-                { "integrationUsername", "[IntegrationUsername]" },
                 { "aprimoTenant", "[AprimoTenantName]" },
                 { "entityTypeDAMFieldID", "[AprimoFieldIDForEntityType]" }, //inRiverEntityType
                 { "entityIDDAMFieldID", "[AprimoFieldIDForEntityID]" }, // inRiverEntityID
@@ -52,13 +51,15 @@ namespace Aprimo.InRiver.InboundExtension
                 { "ResourceTitle", "[AprimoFieldToUseForInRiverResourceTitle]" },
                 { "aprimoRecordIdFieldTypeID", "[inRiverFieldNameToStoreAprimoRecordID]" },
                 { "aprimoResourceFromAprimoFieldTypeID", "[inRiverFieldNameForFieldToMarkAResourceFromAprimo]" },
-                { "entityUniqueFieldsForIdentifying", "[OptionsListMapping]" } //EX: Product:ProductId;Item:ItemNumber;Channel:ChannelName
+                { "aprimoMetadataForResourceMapping", "AprimoFieldName:InRiverFieldName" },
+                { "inRiverEntityUniqueFieldsForIdentifying", "[OptionsListMapping]" } //EX: Product:ProductId;Item:ItemNumber;Channel:ChannelName
 
                 
             };
             Dictionary<string, string> ListenerExtensionSettings = new Dictionary<string, string>
             {
                 { "clientID", "[ClientID]" },
+                { "clientSecret", "clientSecret" },
                 { "integrationUsername", "[AprimoUsername]" },
                 { "aprimoTenant", "[AprimoTenantName]" },
                 { "aprimoResourceFromAprimoFieldTypeID", "[inRiverFieldNameForFieldToMarkAResourceFromAprimo]" },
@@ -87,7 +88,7 @@ namespace Aprimo.InRiver.InboundExtension
             // Create a fake DAM asset (EntityType, File, Metadata?)
             // ChosenEntity is the type of inRiver entity the user wants to link the asset to in inRiver
             // EntityID is the unique identifier for the entity.
-            string damData = "{ \"value\":\"cabef556-986f-4c9d-8253-af32011a37a6;prodStratUnitTest;Product;CREATE\" }";
+            string damData = "{ \"value\":\"[aprimoRecordID];[inRiverEntityName];[inRiverEntityType];ProcessName(CREATE or UPDATE)\" }";
             
             // Create an inRiver resource using the filename and file content
             string retVal = dataAPI.Add(damData);

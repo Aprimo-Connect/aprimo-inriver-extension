@@ -29,7 +29,7 @@ namespace Aprimo.InRiver.OutboundExtension
             { "aprimoRecordIdFieldTypeID", "[inRiverFieldNameForRecordID]" },
             { "inRiverProductMetadataMapping", "[ProductMetadataMapping]" }, // Ex. SKU:[aprimofieldid];Materials:[aprimofieldid];Price:[aprimofieldid]
             { "inRiverItemMetadataMapping", "[ItemMetadataMapping]" }
-           
+
         };
 
         Dictionary<string, string> productMetadataMapping = null;
