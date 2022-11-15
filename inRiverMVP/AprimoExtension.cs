@@ -68,7 +68,9 @@ namespace Aprimo.InRiver.InboundExtension
                 { "inRiverItemMetadataMapping", "[ItemMetadataMapping]" }
             };
 
-           
+           // DataAPI is for the InboundDataExtension and InRiverAprimoListener is for the OutboundExtension
+           // DataAPI calls the Add() method - which is what Aprimo rules will call during the integration
+           // InRiverAprimoListener acts as an inRiver instance and calls the methods that inRiver calls when entities in inRiver are create/update/deleted/etc
            
             dataAPI = new DataAPI();
             //listener = new InRiverAprimoListener();
