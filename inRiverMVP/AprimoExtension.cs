@@ -28,7 +28,8 @@ namespace Aprimo.InRiver.InboundExtension
         {
             // Create RemoteManager, Logger, and get the inRiver context from the RemoteManager -> Context is effectively a wrapper to inRiver's internal API.
             Initialize();
-            TestResourceCreate();
+            TestInbound();
+            //TestOutbound();
         }
 
         static void Initialize()
@@ -73,33 +74,39 @@ namespace Aprimo.InRiver.InboundExtension
            // InRiverAprimoListener acts as an inRiver instance and calls the methods that inRiver calls when entities in inRiver are create/update/deleted/etc
            
             dataAPI = new DataAPI();
-            //listener = new InRiverAprimoListener();
+            listener = new InRiverAprimoListener();
 
             dataAPI.Context = _context;
-            //listener.Context = _context;
+            listener.Context = _context;
 
             dataAPI.Context.Settings = InboundDataExtensionSettings;
-            //listener.Context.Settings = ListenerExtensionSettings;
+            listener.Context.Settings = ListenerExtensionSettings;
 
             
         }
 
-        static string TestResourceCreate()
+        static string TestInbound()
         {
 
-            // Create a fake DAM asset (EntityType, File, Metadata?)
-            // ChosenEntity is the type of inRiver entity the user wants to link the asset to in inRiver
-            // EntityID is the unique identifier for the entity.
+            // Inbound Test
             string damData = "{ \"value\":\"[aprimoRecordID];[inRiverEntityName];[inRiverEntityType];ProcessName(CREATE or UPDATE)\" }";
             
             // Create an inRiver resource using the filename and file content
             string retVal = dataAPI.Add(damData);
+
            
+
 
             Console.WriteLine("Waiting for key press...");
             Console.ReadKey();
             return "test";
         }
 
+        static string TestOutbound()
+        {
+            //Outbound
+            listener.EntityUpdated(123, new string[3] { "field1", "field2", "field3" });
+            return "test";
+        }
     }
 }
