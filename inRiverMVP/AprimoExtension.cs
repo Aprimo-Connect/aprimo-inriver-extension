@@ -34,7 +34,7 @@ namespace Aprimo.InRiver.InboundExtension
 
         static void Initialize()
         {
-            _remoteManager = RemoteManager.CreateInstance("https://partner.remoting.productmarketingcloud.com", "james.ratini@aprimo.com", "b6r1lLGMIClbiAKTlszG!");
+            _remoteManager = RemoteManager.CreateInstance("https://partner.remoting.productmarketingcloud.com", [Username], [Password]);
             _logger = new ConsoleLogger();
             _context = new inRiverContext(_remoteManager, _logger);
            
