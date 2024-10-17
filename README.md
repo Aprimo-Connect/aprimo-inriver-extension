@@ -146,5 +146,11 @@ Additionally, for implementations that may have large amount of updates, it’s 
 
 English is the only supported language for the connector. If additional language support is needed, this will have to be built in.
 
+# Open Source Policy
+
+For more information about Aprimo's Open Source Policies, please refer to
+https://community.aprimo.com/knowledgecenter/aprimo-connect/aprimo-connect-open-source
+
+
 
 
